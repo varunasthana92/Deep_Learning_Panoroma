@@ -1,1 +1,1 @@
-# Deep_Learning_Project_2
+# Deep_Learning_Panoroma
