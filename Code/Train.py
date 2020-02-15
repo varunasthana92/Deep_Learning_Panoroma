@@ -45,14 +45,16 @@ sys.dont_write_bytecode = True
 
 
 def imgCorners(img):
-    gray = np.float32(img)
-    features = cv2.goodFeaturesToTrack(gray, 1500, 0.02,10)
+    # gray = np.float32(img)
+    features = cv2.goodFeaturesToTrack(img, 1500, 0.02,10)
+    # h,w = img.shape[0],img.shape[1]
     Nstrong = features.shape[0]
-    if(Nstrong > 20):
+    if(Nstrong >= 5):
+    	print("Found a match")
     	return True
     else:
+    	print("Reject this match --- Found only "+str(Nstrong)+" matches")
     	return False
-
 
 def GenerateBatch(BasePath, DirNamesTrain, TrainLabels, ImageSize, MiniBatchSize):
 	"""
@@ -70,7 +72,7 @@ def GenerateBatch(BasePath, DirNamesTrain, TrainLabels, ImageSize, MiniBatchSize
 	"""
 	I1Batch = []
 	LabelBatch = []
-	img_size = 32
+	img_size = 64
 	perturb_size = img_size/4
 
 	ImageNum = 0
@@ -88,19 +90,22 @@ def GenerateBatch(BasePath, DirNamesTrain, TrainLabels, ImageSize, MiniBatchSize
 		im = np.float32(cv2.imread(RandImageName,0))
 		# Label = convertToOneHot(TrainLabels[RandIdx], 10)
 		h,w = im.shape
-		im = cv2.imread(RandImageName,0)
-		# h,w = im.shape
+		# im = cv2.imread(RandImageName,0)
+		
 		flag= False
 		while(not flag):
-			x_ , y_ = random.randint(h/2,3*h/4), random.randint(w/2,3*w/4)
-			if((x_ + img_size)<=(h-perturb_size) and (y_ + img_size)<=(w-perturb_size)):
-				if((x_ - img_size)<=(h+perturb_size) and (y_ - img_size)<=(w+perturb_size)):
-					while(not flag):
-						patch = im[x_:x_ + img_size, y_:y_ + img_size]
-						flag= imgCorners(patch)
+			x_ , y_ = random.randint(h/4,h - img_size), random.randint(w/4, w - img_size)
+			if((x_ + img_size)<=(h-perturb_size/2) and (y_ + img_size)<=(w-perturb_size/2)):
+				while(not flag):
+					patch = im[x_:x_ + img_size, y_:y_ + img_size]
+					flag = True #imgCorners(patch)
+
+
+		# x_ , y_ = random.randint(h/2,3*h/4), random.randint(w/2,3*w/4) 
+		# patch = im[x_:x_ + img_size, y_:y_ + img_size]
 		# u,v = []  ## U is --- x ---  and ---  V is Y ---
-		u = [random.randint(-perturb_size,perturb_size) for i in range(4)]
-		v = [random.randint(-perturb_size,perturb_size) for i in range(4)]
+		u = [random.randint(-perturb_size/2,perturb_size/2) for i in range(4)]
+		v = [random.randint(-perturb_size/2,perturb_size/2) for i in range(4)]
 		# Append All Images and Mask
 		
 		im1 = im[x_:x_+img_size, y_:y_+img_size]
