@@ -48,13 +48,14 @@ def imgCorners(img):
     # gray = np.float32(img)
     features = cv2.goodFeaturesToTrack(img, 1500, 0.02,10)
     # h,w = img.shape[0],img.shape[1]
-    Nstrong = features.shape[0]
-    if(Nstrong >= 5):
-    	print("Found a match")
+    try:
+    	Nstrong = features.shape[0]
+    except:
     	return True
-    else:
-    	print("Reject this match --- Found only "+str(Nstrong)+" matches")
+    if(Nstrong >= 10):
     	return False
+    else:
+    	return True
 
 def GenerateBatch(BasePath, DirNamesTrain, TrainLabels, ImageSize, MiniBatchSize):
 	"""
@@ -72,11 +73,12 @@ def GenerateBatch(BasePath, DirNamesTrain, TrainLabels, ImageSize, MiniBatchSize
 	"""
 	I1Batch = []
 	LabelBatch = []
-	img_size = 64
+	img_size = 128
 	perturb_size = img_size/4
-
+	ps= perturb_size
+	scalePatch = 1
 	ImageNum = 0
-	while ImageNum < MiniBatchSize:
+	while len(I1Batch)< MiniBatchSize:
 		# Generate random image
 		RandIdx = random.randint(0, len(DirNamesTrain)-1)
 		
@@ -90,38 +92,43 @@ def GenerateBatch(BasePath, DirNamesTrain, TrainLabels, ImageSize, MiniBatchSize
 		im = np.float32(cv2.imread(RandImageName,0))
 		# Label = convertToOneHot(TrainLabels[RandIdx], 10)
 		h,w = im.shape
-		# im = cv2.imread(RandImageName,0)
 		
-		flag= False
-		while(not flag):
-			x_ , y_ = random.randint(h/4,h - img_size), random.randint(w/4, w - img_size)
-			if((x_ + img_size)<=(h-perturb_size/2) and (y_ + img_size)<=(w-perturb_size/2)):
-				while(not flag):
-					patch = im[x_:x_ + img_size, y_:y_ + img_size]
-					flag = True #imgCorners(patch)
+		if(((3.0/4)*min(h,w)-ps)>((scalePatch+1)*img_size)):
+			# im = cv2.imread(RandImageName,0)
+
+			## Code for finding a patch with features
+			badPatch= True
+			while(badPatch):
+				tempH , tempW = random.randint(int(ps/2),int((h*0.75)-ps/2)), random.randint(int(ps/2),int((w*0.75)-ps/2))
+				bigImg = im[tempH:tempH + (scalePatch*img_size), tempW:tempW + (scalePatch*img_size)]
+				badPatch=  imgCorners(bigImg)
+
+			if (not badPatch):
+				x_ , y_ = random.randint(0,bigImg.shape[0]), random.randint(0,bigImg.shape[1])
+				patch = bigImg[x_:x_ + img_size, y_:y_ + img_size]
 
 
-		# x_ , y_ = random.randint(h/2,3*h/4), random.randint(w/2,3*w/4) 
-		# patch = im[x_:x_ + img_size, y_:y_ + img_size]
-		# u,v = []  ## U is --- x ---  and ---  V is Y ---
-		u = [random.randint(-perturb_size/2,perturb_size/2) for i in range(4)]
-		v = [random.randint(-perturb_size/2,perturb_size/2) for i in range(4)]
-		# Append All Images and Mask
-		
-		im1 = im[x_:x_+img_size, y_:y_+img_size]
-		pa = np.array([[y_,x_],[y_+img_size,x_],[y_+img_size,x_+img_size],[y_,x_+img_size]], dtype='f')
-		pb = np.array([[y_+u[0],x_+v[0]],[y_+img_size+u[1],x_+v[1]],[y_+u[2]+img_size,x_+img_size+v[2]],[y_+u[3],x_+img_size+v[3]]], dtype='f')
-		H = np.linalg.inv(cv2.getPerspectiveTransform(pa,pb))
-		im2_ = cv2.warpPerspective(im,H,(w,h))
-		im2 = im2_[x_:x_+img_size, y_:y_+img_size]
-		im_in = np.zeros((img_size,img_size,2))
-		
-		im_in[:,:,0] = (im1 - im1.mean())/im1.std()
-		im_in[:,:,1] = (im2 - im2.mean())/im2.std()
-		
-		output_homo = np.array(u + v)
-		I1Batch.append(im_in)
-		LabelBatch.append(output_homo)
+				# x_ , y_ = random.randint(h/2,3*h/4), random.randint(w/2,3*w/4) 
+				# patch = im[x_:x_ + img_size, y_:y_ + img_size]
+				# u,v = []  ## U is --- x ---  and ---  V is Y ---
+				u = [random.randint(-perturb_size/2,perturb_size/2) for i in range(4)]
+				v = [random.randint(-perturb_size/2,perturb_size/2) for i in range(4)]
+				# Append All Images and Mask
+				
+				im1 = im[x_:x_+img_size, y_:y_+img_size]
+				pa = np.array([[y_,x_],[y_+img_size,x_],[y_+img_size,x_+img_size],[y_,x_+img_size]], dtype='f')
+				pb = np.array([[y_+u[0],x_+v[0]],[y_+img_size+u[1],x_+v[1]],[y_+u[2]+img_size,x_+img_size+v[2]],[y_+u[3],x_+img_size+v[3]]], dtype='f')
+				H = np.linalg.inv(cv2.getPerspectiveTransform(pa,pb))
+				im2_ = cv2.warpPerspective(im,H,(w,h))
+				im2 = im2_[x_:x_+img_size, y_:y_+img_size]
+				im_in = np.zeros((img_size,img_size,2))
+				
+				im_in[:,:,0] = (im1 - 127.0)/127.0
+				im_in[:,:,1] = (im2 - 127.0)/127.0
+				
+				output_homo = np.array(u + v)
+				I1Batch.append(im_in)
+				LabelBatch.append(output_homo)
 	return I1Batch, LabelBatch
 
 
