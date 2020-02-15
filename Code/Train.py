@@ -262,7 +262,7 @@ def main():
 	"""
 	# Parse Command Line arguments
 	Parser = argparse.ArgumentParser()
-	Parser.add_argument('--BasePath', default='/media/saumil/New Volume/CMSC_733/Proj1/YourDirectoryID_p1/Phase2', help='Base path of images, Default:/media/nitin/Research/Homing/SpectralCompression/COCO')
+	Parser.add_argument('--BasePath', default='..', help='Base path of images, Default:/media/nitin/Research/Homing/SpectralCompression/COCO')
 	Parser.add_argument('--CheckPointPath', default='../Checkpoints/', help='Path to save Checkpoints, Default: ../Checkpoints/')
 	Parser.add_argument('--ModelType', default='Unsup', help='Model type, Supervised or Unsupervised? Choose from Sup and Unsup, Default:Unsup')
 	Parser.add_argument('--NumEpochs', type=int, default=50, help='Number of Epochs to Train for, Default:50')
