@@ -104,23 +104,24 @@ def GenerateBatch(BasePath, DirNamesTrain, TrainLabels, ImageSize, MiniBatchSize
 				badPatch=  imgCorners(bigImg)
 
 			if (not badPatch):
-				x_ , y_ = random.randint(0,bigImg.shape[0]), random.randint(0,bigImg.shape[1])
-				patch = bigImg[x_:x_ + img_size, y_:y_ + img_size]
+				hx_ , wy_ = random.randint(0,bigImg.shape[0]), random.randint(0,bigImg.shape[1])
+				patch = bigImg[hx_:hx_ + img_size, wy_:wy_ + img_size]
 
-
+				ha= tempH+ hx_
+				wa= tempW+ wy_
 				# x_ , y_ = random.randint(h/2,3*h/4), random.randint(w/2,3*w/4) 
 				# patch = im[x_:x_ + img_size, y_:y_ + img_size]
 				# u,v = []  ## U is --- x ---  and ---  V is Y ---
-				u = [random.randint(-perturb_size/2,perturb_size/2) for i in range(4)]
-				v = [random.randint(-perturb_size/2,perturb_size/2) for i in range(4)]
+				hv = [random.randint(-perturb_size/2,perturb_size/2) for i in range(4)]
+				wu = [random.randint(-perturb_size/2,perturb_size/2) for i in range(4)]
 				# Append All Images and Mask
 				
-				im1 = im[x_:x_+img_size, y_:y_+img_size]
-				pa = np.array([[y_,x_],[y_+img_size,x_],[y_+img_size,x_+img_size],[y_,x_+img_size]], dtype='f')
-				pb = np.array([[y_+u[0],x_+v[0]],[y_+img_size+u[1],x_+v[1]],[y_+u[2]+img_size,x_+img_size+v[2]],[y_+u[3],x_+img_size+v[3]]], dtype='f')
+				im1 = im[ha:ha+img_size, wa:wa+img_size]
+				pa = np.array([[wa,ha],[wa+img_size,ha],[wa+img_size,ha+img_size],[wa,ha+img_size]], dtype='f')
+				pb = np.array([[wa+wu[0],ha+hv[0]],[wa+img_size+wu[1],ha+hv[1]],[wa+wu[2]+img_size,ha+img_size+hv[2]],[wa+wu[3],ha+img_size+hv[3]]], dtype='f')
 				H = np.linalg.inv(cv2.getPerspectiveTransform(pa,pb))
 				im2_ = cv2.warpPerspective(im,H,(w,h))
-				im2 = im2_[x_:x_+img_size, y_:y_+img_size]
+				im2 = im2_[hx_:hx_+img_size, wy_:wy_+img_size]
 				im_in = np.zeros((img_size,img_size,2))
 				
 				im_in[:,:,0] = (im1 - 127.0)/127.0
