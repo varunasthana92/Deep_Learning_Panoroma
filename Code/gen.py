@@ -2,6 +2,7 @@ import glob
 import cv2
 import numpy as np 
 import random
+import os
 
 def imgCorners(img):
 	features = cv2.goodFeaturesToTrack(img, 1500, 0.03,10)
@@ -68,6 +69,10 @@ def generatePatches(img, patchSize, p):
 
 path = "../Data/Train/*.jpg"
 newPath = "../Data/AugTrain/"
+try:
+	os.mkdir(newPath)
+except:
+	pass
 imgNames = glob.glob(path)
 patchSize = 128
 perturbSize = patchSize/8
