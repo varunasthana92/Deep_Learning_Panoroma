@@ -3,12 +3,13 @@ import cv2
 import numpy as np 
 import random
 
-def TDLT(ca, cb, h4pt):
+def TDLT(ca, h4pt):
 	A = []
 	B = []
+
 	for i in range(4):
 		x, y = ca[i][0], ca[i][1]
-		u, v = cb[i][0], cb[i][1]
+		u, v = h4pt[i], h4pt[i+5]
 		B.append(-v)
 		B.append(u)
 		tempA1 = [0 0 0 -x -y -1 x*v y*v]
