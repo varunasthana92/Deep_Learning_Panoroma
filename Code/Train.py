@@ -123,7 +123,7 @@ def TrainOperation(ImgPH, LabelPH, DirNamesTrain1, DirNamesTrain2, TrainLabels, 
 		###############################################
 		# cross_entropy = tf.nn.softmax_cross_entropy_with_logits(labels = LabelPH, logits = prLogits)
 		# loss = tf.reduce_mean(cross_entropy)
-		loss = tf.nn.l2_loss(prLogits-LabelPH)
+		loss = tf.nn.l2_loss(tf.square(prLogits-LabelPH))
 		# loss = tf.square(prLogits-LabelPH)
 		# loss = tf.reduce_mean(loss_)
 		# loss = tf.
@@ -135,7 +135,7 @@ def TrainOperation(ImgPH, LabelPH, DirNamesTrain1, DirNamesTrain2, TrainLabels, 
 		###############################################
 		# Fill your optimizer of choice here!
 		###############################################
-		Optimizer = tf.train.AdamOptimizer(learning_rate = 1e-4).minimize(loss)
+		Optimizer = tf.train.AdamOptimizer(learning_rate = 1e-5).minimize(loss)
 
 	# Tensorboard
 	# Create a summary to monitor loss tensor
@@ -197,7 +197,7 @@ def TrainOperation(ImgPH, LabelPH, DirNamesTrain1, DirNamesTrain2, TrainLabels, 
 			print('\n' + SaveName + ' Model Saved...')
 			print("----------------After epoch------------")
 			print("Total loss = "+str(np.array(temp_loss).sum()))
-			print("Total accuracy = "+str(np.array(temp_acc).mean()))
+			# print("Total accuracy = "+str(np.array(temp_acc).mean()))
 			print("--------------------------------------------")
 			temp_acc = []
 			temp_loss = []

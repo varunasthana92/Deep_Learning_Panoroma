@@ -37,6 +37,7 @@ def HomographyModel(Img, ImageSize, MiniBatchSize):
     #############################
     net = Img
     net = CBR(net, 64, 3)
+    #net = tf.nn.dropout(net, 0.5)
     net = CBR(net, 64, 3)
 
     net = tf.layers.max_pooling2d(inputs = net, pool_size = 2, strides = 2)
@@ -62,6 +63,7 @@ def HomographyModel(Img, ImageSize, MiniBatchSize):
 
     #Define the Neural Network's fully connected layers:
     net = tf.layers.dense(inputs = net, name ='layer_fc1', units = 1024, activation = tf.nn.relu)
+    net = tf.nn.dropout(net, 0.5)
     #net = tf.layers.dense(inputs = net, name ='layer_fc2',units = 128, activation=tf.nn.relu)
     prLogits = tf.layers.dense(inputs = net, name='layer_fc_out', units = 8, activation = None)
 
