@@ -79,12 +79,14 @@ def PrettyPrint(NumEpochs, DivTrain, MiniBatchSize, NumTrainSamples, LatestFile)
 	"""
 	Prints all stats with all arguments
 	"""
+	print("--------------------------------------------------------")
 	print('Number of Epochs Training will run for ' + str(NumEpochs))
 	print('Factor of reduction in training data is ' + str(DivTrain))
 	print('Mini Batch Size ' + str(MiniBatchSize))
 	print('Number of Training Images ' + str(NumTrainSamples))
 	if LatestFile is not None:
 		print('Loading latest checkpoint with the name ' + LatestFile)              
+	print("--------------------------------------------------------")
 
 	
 def TrainOperation(ImgPH, LabelPH, DirNamesTrain1, DirNamesTrain2, TrainLabels, NumTrainSamples, ImageSize,
@@ -111,32 +113,34 @@ def TrainOperation(ImgPH, LabelPH, DirNamesTrain1, DirNamesTrain2, TrainLabels, 
 	Saves Trained network in CheckPointPath and Logs to LogsPath
 	"""      
 	# Predict output with forward pass
-	prLogits, prSoftMax = HomographyModel(ImgPH, ImageSize, MiniBatchSize)
+	prLogits = HomographyModel(ImgPH, ImageSize, MiniBatchSize)
 
 	with tf.name_scope('Loss'):
 		###############################################
 		# Fill your loss function of choice here!
 		###############################################
-		cross_entropy = tf.nn.softmax_cross_entropy_with_logits(labels = LabelPH, logits = prLogits)
+		# cross_entropy = tf.nn.softmax_cross_entropy_with_logits(labels = LabelPH, logits = prLogits)
 		# loss = tf.reduce_mean(cross_entropy)
-		loss = tf.nn.l2_loss(cross_entropy)
-		# loss = tf.reduce_mean(loss_)
+		# loss = tf.nn.l2_loss(prLogits-LabelPH)
+		loss_ = tf.square(prLogits-LabelPH)
+		loss = tf.reduce_mean(loss_)
+		# loss = tf.
 		
-	with tf.name_scope('Accuracy'):
-		prSoftMaxDecoded = tf.argmax(prSoftMax, axis=1)
-		LabelDecoded = tf.argmax(LabelPH, axis=1)
-		Acc = tf.reduce_mean(tf.cast(tf.math.equal(prSoftMaxDecoded, LabelDecoded), dtype=tf.float32))
+	# with tf.name_scope('Accuracy'):
+	# 	Acc = tf.math.equal(prLogits, LabelPH)
 
 	with tf.name_scope('Adam'):
 		###############################################
 		# Fill your optimizer of choice here!
 		###############################################
-		Optimizer = tf.train.AdamOptimizer(learning_rate = 3*1e-3).minimize(loss)
+		Optimizer = tf.train.AdamOptimizer(learning_rate = 1e-3).minimize(tf.square(prLogits-LabelPH))
 
 	# Tensorboard
 	# Create a summary to monitor loss tensor
 	tf.summary.scalar('LossEveryIter', loss)
-	tf.summary.scalar('Accuracy', Acc)
+	tf.summary.histogram("Errors",loss_)
+	# tf.summary.scalar('Er', loss_[0])
+	# tf.summary.scalar('Accuracy', Acc)
 	# tf.summary.image('Anything you want', AnyImg)
 	# Merge all summaries into a single operation
 	MergedSummaryOP = tf.summary.merge_all()
@@ -166,9 +170,10 @@ def TrainOperation(ImgPH, LabelPH, DirNamesTrain1, DirNamesTrain2, TrainLabels, 
 			for PerEpochCounter in tqdm(range(NumIterationsPerEpoch)):
 				I1Batch, LabelBatch = GenerateBatch(BasePath, DirNamesTrain1, DirNamesTrain2, TrainLabels, ImageSize, MiniBatchSize, PerEpochCounter)
 				FeedDict = {ImgPH: I1Batch, LabelPH: LabelBatch}
-				_, LossThisBatch, Summary = sess.run([Optimizer, loss, MergedSummaryOP], feed_dict=FeedDict)
+				_, LossThisBatch, Summary,out = sess.run([Optimizer, loss, MergedSummaryOP, prLogits], feed_dict=FeedDict)
 				temp_loss.append(LossThisBatch)
-				temp_acc.append(sess.run([Acc], feed_dict=FeedDict))
+				tf.Print(prLogits,[])
+				# temp_acc.append(sess.run([Acc], feed_dict=FeedDict))
 				# Save checkpoint every some SaveCheckPoint's iterations
 				if PerEpochCounter % SaveCheckPoint == 0:
 					# Save the Model learnt in this epoch
@@ -176,7 +181,7 @@ def TrainOperation(ImgPH, LabelPH, DirNamesTrain1, DirNamesTrain2, TrainLabels, 
 					Saver.save(sess,  save_path=SaveName)
 					print('\n' + SaveName + ' Model Saved...')
 					print("Loss of model : "+str(LossThisBatch))
-					print("Accuracy of model : " + str(sess.run([Acc], feed_dict=FeedDict)))
+					# print("Accuracy of model : " + str(sess.run([Acc], feed_dict=FeedDict)))
 				# Tensorboard
 				Writer.add_summary(Summary, Epochs*NumIterationsPerEpoch + PerEpochCounter)
 				# If you don't flush the tensorboard doesn't update until a lot of iterations!

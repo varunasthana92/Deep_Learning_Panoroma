@@ -69,6 +69,7 @@ def HomographyModel(Img, ImageSize, MiniBatchSize):
     # prLogits = layer_fc2
     # H4Pt = net
     #prSoftMax is defined as normalized probabilities of the output of the neural network
-    prSoftMax = tf.nn.softmax(logits = prLogits)
-    return prLogits, prSoftMax
+    # prSoftMax = tf.nn.softmax(logits = prLogits)
+    # print(prLogits)
+    return prLogits
 
