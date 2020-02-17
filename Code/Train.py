@@ -64,7 +64,9 @@ def GenerateBatch(BasePath, DirNamesTrain1, DirNamesTrain2, TrainLabels, ImageSi
 	img_size = 128
 	for i in range(PerEpochCounter*MiniBatchSize, (PerEpochCounter+1)*MiniBatchSize):
 		im1 = np.float32(cv2.imread(DirNamesTrain1[i], 0))
+		#print(im1.shape)
 		im2 = np.float32(cv2.imread(DirNamesTrain2[i], 0))
+		#print("\n----"+str(im2.shape)+"\n---")
 		ims = np.zeros((img_size, img_size,2))
 		ims[:,:,0] = (im1 -127.0)/127.0
 		ims[:,:,1] = (im2 - 127.0)/127.0
@@ -121,9 +123,9 @@ def TrainOperation(ImgPH, LabelPH, DirNamesTrain1, DirNamesTrain2, TrainLabels, 
 		###############################################
 		# cross_entropy = tf.nn.softmax_cross_entropy_with_logits(labels = LabelPH, logits = prLogits)
 		# loss = tf.reduce_mean(cross_entropy)
-		# loss = tf.nn.l2_loss(prLogits-LabelPH)
-		loss_ = tf.square(prLogits-LabelPH)
-		loss = tf.reduce_mean(loss_)
+		loss = tf.nn.l2_loss(prLogits-LabelPH)
+		# loss = tf.square(prLogits-LabelPH)
+		# loss = tf.reduce_mean(loss_)
 		# loss = tf.
 		
 	# with tf.name_scope('Accuracy'):
@@ -133,12 +135,12 @@ def TrainOperation(ImgPH, LabelPH, DirNamesTrain1, DirNamesTrain2, TrainLabels, 
 		###############################################
 		# Fill your optimizer of choice here!
 		###############################################
-		Optimizer = tf.train.AdamOptimizer(learning_rate = 1e-3).minimize(tf.square(prLogits-LabelPH))
+		Optimizer = tf.train.AdamOptimizer(learning_rate = 1e-4).minimize(loss)
 
 	# Tensorboard
 	# Create a summary to monitor loss tensor
 	tf.summary.scalar('LossEveryIter', loss)
-	tf.summary.histogram("Errors",loss_)
+	# tf.summary.histogram("Errors",loss_)
 	# tf.summary.scalar('Er', loss_[0])
 	# tf.summary.scalar('Accuracy', Acc)
 	# tf.summary.image('Anything you want', AnyImg)
@@ -172,7 +174,7 @@ def TrainOperation(ImgPH, LabelPH, DirNamesTrain1, DirNamesTrain2, TrainLabels, 
 				FeedDict = {ImgPH: I1Batch, LabelPH: LabelBatch}
 				_, LossThisBatch, Summary,out = sess.run([Optimizer, loss, MergedSummaryOP, prLogits], feed_dict=FeedDict)
 				temp_loss.append(LossThisBatch)
-				tf.Print(prLogits,[])
+				# tf.Print(prLogits,[])
 				# temp_acc.append(sess.run([Acc], feed_dict=FeedDict))
 				# Save checkpoint every some SaveCheckPoint's iterations
 				if PerEpochCounter % SaveCheckPoint == 0:
