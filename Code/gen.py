@@ -69,11 +69,21 @@ def generatePatches(img, patchSize, p):
 
 path = "../Data/Train/*.jpg"
 newPath = "../Data/AugTrain/"
+path_test = "../Data/Val/*.jpg"
+newPath_test = "../Data/AugVal/"
 try:
 	os.mkdir(newPath)
 except:
 	pass
+
+try:
+	os.mkdir(newPath_test)
+except:
+	pass
+
 imgNames = glob.glob(path)
+imgNames_test = glob.glob(path_test)
+
 patchSize = 128
 perturbSize = patchSize/8
 i = 0
@@ -84,6 +94,15 @@ im2_filename = "TxtFiles/data2.txt"
 all_perturbs = []
 all_perturbs_file = "TxtFiles/perturbs.csv"
 
+im1_test_names = []
+im1_test_filename = "TxtFiles/val_data1.txt"
+im2_test_names = []
+im2_test_filename = "TxtFiles/val_data2.txt"
+all_test_perturbs = []
+all_test_perturbs_file = "TxtFiles/val_perturbs.csv"
+
+############################ Train Data ############################
+###################### Generating training images ##################
 for imageName in imgNames:
 	img = getImage(imageName)
 	for j in range(10):
@@ -100,14 +119,16 @@ for imageName in imgNames:
 			i=i+1
 			print(str(i+1)+" writter !!")
 			pass
-
+######################################################################
+################## Shuffling train data ##############################
 print("Suffling data....")
 for j in range(10):
 	ran = random.randint(1,10)
 	random.Random(ran).shuffle(im1_names)
 	random.Random(ran).shuffle(im2_names)
 	random.Random(ran).shuffle(all_perturbs)
-
+######################################################################
+################# Writing data into files ############################
 print("Writing Data 1 names")
 with open(im1_filename, 'w') as output:
     for row in im1_names:
@@ -119,4 +140,48 @@ with open(im2_filename, 'w') as output:
 
 print("Writing outputs")
 np.savetxt(all_perturbs_file, np.array(all_perturbs), delimiter=",")
+#####################################################################
+#####################################################################
 
+######################### Test data ##################################
+
+###################### Generating training images ####################
+for imageName in imgNames_test:
+	img = getImage(imageName)
+	for j in range(5):
+		im1,im2,homo = generatePatches(img, patchSize, perturbSize)
+		try:
+			if im1==0:
+				print("----------\n\n\nMissed  "+str(imageName)+"\n\n\n-------")
+		except:
+			cv2.imwrite(newPath_test+str(i+1)+"_1.jpg", im1)
+			cv2.imwrite(newPath_test+str(i+1)+"_2.jpg", im2)
+			im1_test_names.append(newPath_test+str(i+1)+"_1.jpg")
+			im2_test_names.append(newPath_test+str(i+1)+"_2.jpg")
+			all_test_perturbs.append(homo)
+			i=i+1
+			print(str(i+1)+" writter !!")
+			pass
+######################################################################
+################## Shuffling train data ##############################
+print("Suffling data....")
+for j in range(10):
+	ran = random.randint(1,10)
+	random.Random(ran).shuffle(im1_test_names)
+	random.Random(ran).shuffle(im2_test_names)
+	random.Random(ran).shuffle(all_test_perturbs)
+######################################################################
+################# Writing data into files ############################
+print("Writing Data 1 names")
+with open(im1_test_filename, 'w') as output:
+    for row in im1_test_names:
+        output.write(str(row) + '\n')
+print("Writing Data 2 names")
+with open(im2_test_filename, 'w') as output:
+    for row in im2_test_names:
+        output.write(str(row) + '\n')
+
+print("Writing outputs")
+np.savetxt(all_test_perturbs_file, np.array(all_test_perturbs), delimiter=",")
+######################################################################
+######################################################################
