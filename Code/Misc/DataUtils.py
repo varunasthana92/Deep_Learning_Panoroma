@@ -35,12 +35,12 @@ def SetupAll(BasePath, CheckPointPath):
     NumClasses - Number of classes
     """
     # Setup DirNames
-    DirNamesTrain =  SetupDirNames(BasePath)
+    DirNamesTrain1, DirNamesTrain2 =  SetupDirNames(BasePath)
 
     # Read and Setup Labels
-    # LabelsPathTrain = './TxtFiles/LabelsTrain.txt'
-    # TrainLabels = ReadLabels(LabelsPathTrain)
-    TrainLabels = []
+    LabelsPathTrain = './TxtFiles/perturbs.csv'
+    TrainLabels = ReadLabels(LabelsPathTrain)
+
     # If CheckPointPath doesn't exist make the path
     if(not (os.path.isdir(CheckPointPath))):
        os.makedirs(CheckPointPath)
@@ -52,12 +52,12 @@ def SetupAll(BasePath, CheckPointPath):
     
     # Image Input Shape
     ImageSize = [128, 128, 2]
-    NumTrainSamples = len(DirNamesTrain)
+    NumTrainSamples = len(DirNamesTrain1)
 
     # Number of classes
     NumClasses = 8
 
-    return DirNamesTrain, SaveCheckPoint, ImageSize, NumTrainSamples, TrainLabels, NumClasses
+    return DirNamesTrain1, DirNamesTrain2, SaveCheckPoint, ImageSize, NumTrainSamples, TrainLabels, NumClasses
 
 def ReadLabels(LabelsPathTrain):
     if(not (os.path.isfile(LabelsPathTrain))):
@@ -66,9 +66,9 @@ def ReadLabels(LabelsPathTrain):
     else:
         TrainLabels = open(LabelsPathTrain, 'r')
         TrainLabels = TrainLabels.read()
-        TrainLabels = map(float, TrainLabels.split())
-
-    return TrainLabels
+        TrainLabels = TrainLabels.split()
+        allLabels = [np.array(label.split(","),dtype="f") for label in TrainLabels]
+    return allLabels
     
 
 def SetupDirNames(BasePath): 
@@ -78,9 +78,9 @@ def SetupDirNames(BasePath):
     Outputs:
     Writes a file ./TxtFiles/DirNames.txt with full path to all image files without extension
     """
-    DirNamesTrain = ReadDirNames(BasePath+'/Code/TxtFiles/DirNamesTrain.txt')        
-    
-    return DirNamesTrain
+    DirNamesTrain1 = ReadDirNames('./TxtFiles/data1.txt')        
+    DirNamesTrain2 = ReadDirNames('./TxtFiles/data2.txt')
+    return DirNamesTrain1, DirNamesTrain2
 
 def ReadDirNames(ReadPath):
     """
