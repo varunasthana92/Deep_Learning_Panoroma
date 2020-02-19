@@ -75,8 +75,6 @@ def GenerateBatch(BasePath, DirNamesTrain1, DirNamesTrain2, TrainLabels, ImageSi
 	
 	return I1Batch, LabelBatch
 
-
-
 def PrettyPrint(NumEpochs, DivTrain, MiniBatchSize, NumTrainSamples, LatestFile):
 	"""
 	Prints all stats with all arguments
@@ -94,7 +92,7 @@ def PrettyPrint(NumEpochs, DivTrain, MiniBatchSize, NumTrainSamples, LatestFile)
 def TrainOperation(ImgPH, LabelPH, DirNamesTrain1, DirNamesTrain2, TrainLabels, NumTrainSamples, ImageSize,
 				   NumEpochs, MiniBatchSize, SaveCheckPoint, CheckPointPath,
 				   DivTrain, LatestFile, BasePath, LogsPath, ModelType, DirNamesValid1, DirNamesValid2, 
-				   NumValidSamples, ValidLabels):
+				   NumValidSamples, ValidLabels, lr):
 	"""
 	Inputs: 
 	ImgPH is the Input Image placeholder
@@ -117,7 +115,7 @@ def TrainOperation(ImgPH, LabelPH, DirNamesTrain1, DirNamesTrain2, TrainLabels, 
 	"""      
 	# Predict output with forward pass
 	H4Pt = HomographyModel(ImgPH, ImageSize, MiniBatchSize)
-
+	initial_lr = 0.0001
 	with tf.name_scope('Loss'):
 		###############################################
 		# Fill your loss function of choice here!
@@ -134,7 +132,7 @@ def TrainOperation(ImgPH, LabelPH, DirNamesTrain1, DirNamesTrain2, TrainLabels, 
 		###############################################
 		# Fill your optimizer of choice here!
 		###############################################
-		Optimizer = tf.train.AdamOptimizer(learning_rate = 1e-3).minimize(loss)
+		Optimizer = tf.train.AdamOptimizer(learning_rate = lr).minimize(loss)
 
 	with tf.name_scope("ValidationLoss"):
 		validation_loss = tf.reduce_sum(tf.square(H4Pt-LabelPH))/2.0
@@ -175,9 +173,11 @@ def TrainOperation(ImgPH, LabelPH, DirNamesTrain1, DirNamesTrain2, TrainLabels, 
 			
 		for Epochs in tqdm(range(StartEpoch, NumEpochs)):
 			NumIterationsPerEpoch = int(NumTrainSamples/MiniBatchSize/DivTrain)
+			if Epochs%5==0:
+				initial_lr = initial_lr/10.0
 			for PerEpochCounter in tqdm(range(NumIterationsPerEpoch)):
 				I1Batch, LabelBatch = GenerateBatch(BasePath, DirNamesTrain1, DirNamesTrain2, TrainLabels, ImageSize, MiniBatchSize, PerEpochCounter)
-				FeedDict = {ImgPH: I1Batch, LabelPH: LabelBatch}
+				FeedDict = {ImgPH: I1Batch, LabelPH: LabelBatch, lr: initial_lr}
 				_, LossThisBatch, Summary,out = sess.run([Optimizer, loss, TrainingSummary, H4Pt], feed_dict=FeedDict)
 				temp_loss.append(LossThisBatch)
 				if PerEpochCounter % SaveCheckPoint == 0:
@@ -226,9 +226,9 @@ def main():
 	Parser.add_argument('--BasePath', default='..', help='Base path of images, Default:/media/nitin/Research/Homing/SpectralCompression/COCO')
 	Parser.add_argument('--CheckPointPath', default='../Checkpoints/', help='Path to save Checkpoints, Default: ../Checkpoints/')
 	Parser.add_argument('--ModelType', default='Unsup', help='Model type, Supervised or Unsupervised? Choose from Sup and Unsup, Default:Unsup')
-	Parser.add_argument('--NumEpochs', type=int, default=1, help='Number of Epochs to Train for, Default:50')
-	Parser.add_argument('--DivTrain', type=int, default=10, help='Factor to reduce Train data by per epoch, Default:1')
-	Parser.add_argument('--MiniBatchSize', type=int, default=16, help='Size of the MiniBatch to use, Default:1')
+	Parser.add_argument('--NumEpochs', type=int, default=20, help='Number of Epochs to Train for, Default:50')
+	Parser.add_argument('--DivTrain', type=int, default=1, help='Factor to reduce Train data by per epoch, Default:1')
+	Parser.add_argument('--MiniBatchSize', type=int, default=32, help='Size of the MiniBatch to use, Default:1')
 	Parser.add_argument('--LoadCheckPoint', type=int, default=0, help='Load Model from latest Checkpoint from CheckPointsPath?, Default:0')
 	Parser.add_argument('--LogsPath', default='Logs/', help='Path to save Logs for Tensorboard, Default=Logs/')
 
@@ -258,10 +258,10 @@ def main():
 	# Define PlaceHolder variables for Input and Predicted output
 	ImgPH = tf.placeholder(tf.float32, shape=(MiniBatchSize, ImageSize[0], ImageSize[1], ImageSize[2]))
 	LabelPH = tf.placeholder(tf.float32, shape=(MiniBatchSize, NumClasses)) # OneHOT labels
-	
+	learning_rate = tf.placeholder(tf.float32, shape=[])
 	TrainOperation(ImgPH, LabelPH, DirNamesTrain1, DirNamesTrain2, TrainLabels, NumTrainSamples, ImageSize,
 				   NumEpochs, MiniBatchSize, SaveCheckPoint, CheckPointPath,
-				   DivTrain, LatestFile, BasePath, LogsPath, ModelType, DirNamesValid1, DirNamesValid2, NumValidSamples, ValidLabels)
+				   DivTrain, LatestFile, BasePath, LogsPath, ModelType, DirNamesValid1, DirNamesValid2, NumValidSamples, ValidLabels, learning_rate)
 		
 	
 if __name__ == '__main__':
