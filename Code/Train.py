@@ -93,7 +93,8 @@ def PrettyPrint(NumEpochs, DivTrain, MiniBatchSize, NumTrainSamples, LatestFile)
 	
 def TrainOperation(ImgPH, LabelPH, DirNamesTrain1, DirNamesTrain2, TrainLabels, NumTrainSamples, ImageSize,
 				   NumEpochs, MiniBatchSize, SaveCheckPoint, CheckPointPath,
-				   DivTrain, LatestFile, BasePath, LogsPath, ModelType):
+				   DivTrain, LatestFile, BasePath, LogsPath, ModelType, DirNamesValid1, DirNamesValid2, 
+				   NumValidSamples, ValidLabels):
 	"""
 	Inputs: 
 	ImgPH is the Input Image placeholder
@@ -133,7 +134,7 @@ def TrainOperation(ImgPH, LabelPH, DirNamesTrain1, DirNamesTrain2, TrainLabels, 
 		###############################################
 		# Fill your optimizer of choice here!
 		###############################################
-		Optimizer = tf.train.AdamOptimizer(learning_rate = 1e-4).minimize(loss)
+		Optimizer = tf.train.AdamOptimizer(learning_rate = 1e-3).minimize(loss)
 
 	with tf.name_scope("ValidationLoss"):
 		validation_loss = tf.reduce_sum(tf.square(H4Pt-LabelPH))/2.0
@@ -156,6 +157,7 @@ def TrainOperation(ImgPH, LabelPH, DirNamesTrain1, DirNamesTrain2, TrainLabels, 
 	acc = []
 	temp_error = []
 	temp_loss = []
+	temp_valid_loss = []
 	loss_ = []
 	with tf.Session() as sess:       
 		if LatestFile is not None:
@@ -178,33 +180,39 @@ def TrainOperation(ImgPH, LabelPH, DirNamesTrain1, DirNamesTrain2, TrainLabels, 
 				FeedDict = {ImgPH: I1Batch, LabelPH: LabelBatch}
 				_, LossThisBatch, Summary,out = sess.run([Optimizer, loss, TrainingSummary, H4Pt], feed_dict=FeedDict)
 				temp_loss.append(LossThisBatch)
-				# tf.Print(prLogits,[])
-				# temp_acc.append(sess.run([Acc], feed_dict=FeedDict))
-				# Save checkpoint every some SaveCheckPoint's iterations
 				if PerEpochCounter % SaveCheckPoint == 0:
 					# Save the Model learnt in this epoch
 					SaveName =  CheckPointPath + str(Epochs) + 'a' + str(PerEpochCounter) + 'model.ckpt'
 					Saver.save(sess,  save_path=SaveName)
 					print('\n' + SaveName + ' Model Saved...')
 					print("Loss of model : "+str(LossThisBatch))
-					# print("Accuracy of model : " + str(sess.run([Acc], feed_dict=FeedDict)))
 				# Tensorboard
 				Writer.add_summary(Summary, Epochs*NumIterationsPerEpoch + PerEpochCounter)
+				# If you don't flush the tensorboard doesn't update until a lot of iterations!
+				Writer.flush()
+
+			######################### Validation ################################
+			NumIterationsPerEpoch = int(NumValidSamples/MiniBatchSize)
+			for PerEpochCounter in tqdm(range(NumIterationsPerEpoch)):
+				I1Batch, LabelBatch = GenerateBatch(BasePath, DirNamesValid1, DirNamesValid2, ValidLabels, ImageSize, MiniBatchSize, PerEpochCounter)
+				FeedDict = {ImgPH: I1Batch, LabelPH: LabelBatch}
+				LossThisBatchValidation, valSummary = sess.run([loss, ValidationSummary], feed_dict=FeedDict)
+				temp_valid_loss.append(LossThisBatchValidation)
+				Writer.add_summary(valSummary, Epochs*NumIterationsPerEpoch + PerEpochCounter)
 				# If you don't flush the tensorboard doesn't update until a lot of iterations!
 				Writer.flush()
 
 			# Save model every epoch
 			SaveName = CheckPointPath + str(Epochs) + 'model.ckpt'
 			Saver.save(sess, save_path=SaveName)
-			loss_.append(np.array(temp_loss).sum())
-			acc.append(np.array(temp_acc).mean())
 			print('\n' + SaveName + ' Model Saved...')
 			print("----------------After epoch------------")
 			print("Total loss = "+str(np.array(temp_loss).sum()))
-			# print("Total accuracy = "+str(np.array(temp_acc).mean()))
+			print("Validation loss = "+str(np.array(temp_valid_loss).sum()))
 			print("--------------------------------------------")
-			temp_acc = []
 			temp_loss = []
+			temp_valid_loss = []
+
 
 def main():
 	"""
@@ -219,7 +227,7 @@ def main():
 	Parser.add_argument('--CheckPointPath', default='../Checkpoints/', help='Path to save Checkpoints, Default: ../Checkpoints/')
 	Parser.add_argument('--ModelType', default='Unsup', help='Model type, Supervised or Unsupervised? Choose from Sup and Unsup, Default:Unsup')
 	Parser.add_argument('--NumEpochs', type=int, default=1, help='Number of Epochs to Train for, Default:50')
-	Parser.add_argument('--DivTrain', type=int, default=1, help='Factor to reduce Train data by per epoch, Default:1')
+	Parser.add_argument('--DivTrain', type=int, default=10, help='Factor to reduce Train data by per epoch, Default:1')
 	Parser.add_argument('--MiniBatchSize', type=int, default=16, help='Size of the MiniBatch to use, Default:1')
 	Parser.add_argument('--LoadCheckPoint', type=int, default=0, help='Load Model from latest Checkpoint from CheckPointsPath?, Default:0')
 	Parser.add_argument('--LogsPath', default='Logs/', help='Path to save Logs for Tensorboard, Default=Logs/')
@@ -236,8 +244,7 @@ def main():
 
 	# Setup all needed parameters including file reading
 	DirNamesTrain1, DirNamesTrain2, SaveCheckPoint, ImageSize, NumTrainSamples, TrainLabels, NumClasses = SetupAll(BasePath, CheckPointPath)
-
-
+	DirNamesValid1, DirNamesValid2, NumValidSamples, ValidLabels = setupValidation(BasePath)
 
 	# Find Latest Checkpoint File
 	if LoadCheckPoint==1:
@@ -254,7 +261,7 @@ def main():
 	
 	TrainOperation(ImgPH, LabelPH, DirNamesTrain1, DirNamesTrain2, TrainLabels, NumTrainSamples, ImageSize,
 				   NumEpochs, MiniBatchSize, SaveCheckPoint, CheckPointPath,
-				   DivTrain, LatestFile, BasePath, LogsPath, ModelType)
+				   DivTrain, LatestFile, BasePath, LogsPath, ModelType, DirNamesValid1, DirNamesValid2, NumValidSamples, ValidLabels)
 		
 	
 if __name__ == '__main__':

@@ -35,7 +35,7 @@ def SetupAll(BasePath, CheckPointPath):
     NumClasses - Number of classes
     """
     # Setup DirNames
-    DirNamesTrain1, DirNamesTrain2 =  SetupDirNames(BasePath)
+    DirNamesTrain1, DirNamesTrain2 = SetupDirNames(BasePath)
 
     # Read and Setup Labels
     LabelsPathTrain = './TxtFiles/perturbs.csv'
@@ -59,6 +59,13 @@ def SetupAll(BasePath, CheckPointPath):
 
     return DirNamesTrain1, DirNamesTrain2, SaveCheckPoint, ImageSize, NumTrainSamples, TrainLabels, NumClasses
 
+def setupValidation(BasePath):
+    DirNamesValid1, DirNamesValid2 = SetupValidDirNames(BasePath)
+    LabelsPathValid = './TxtFiles/val_perturbs.csv'
+    ValidLabels = ReadValidLabels(LabelsPathValid)
+    NumValidSamples = len(DirNamesValid1)
+    return DirNamesValid1, DirNamesValid2, NumValidSamples, ValidLabels
+
 def ReadLabels(LabelsPathTrain):
     if(not (os.path.isfile(LabelsPathTrain))):
         print('ERROR: Train Labels do not exist in '+LabelsPathTrain)
@@ -70,6 +77,16 @@ def ReadLabels(LabelsPathTrain):
         allLabels = [np.array(label.split(","),dtype="f") for label in TrainLabels]
     return allLabels
     
+def ReadValidLabels(LabelsPathValid):
+    if(not (os.path.isfile(LabelsPathValid))):
+        print('ERROR: Validation Labels do not exist in '+LabelsPathValid)
+        sys.exit()
+    else:
+        ValidLabels = open(LabelsPathValid, 'r')
+        ValidLabels = ValidLabels.read()
+        ValidLabels = ValidLabels.split()
+        allLabels = [np.array(label.split(","),dtype="f") for label in ValidLabels]
+    return allLabels
 
 def SetupDirNames(BasePath): 
     """
@@ -94,3 +111,15 @@ def ReadDirNames(ReadPath):
     DirNames = DirNames.read()
     DirNames = DirNames.split()
     return DirNames
+
+def SetupValidDirNames(BasePath): 
+    """
+    Inputs: 
+    BasePath is the base path where Images are saved without "/" at the end
+    Outputs:
+    Writes a file ./TxtFiles/DirNames.txt with full path to all image files without extension
+    """
+    DirNamesValid1 = ReadDirNames('./TxtFiles/val_data1.txt')        
+    DirNamesValid2 = ReadDirNames('./TxtFiles/val_data2.txt')
+    return DirNamesValid1, DirNamesValid2
+
