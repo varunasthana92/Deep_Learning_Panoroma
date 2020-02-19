@@ -65,7 +65,7 @@ def HomographyModel(Img, ImageSize, MiniBatchSize):
     net = tf.layers.dense(inputs = net, name ='layer_fc1', units = 1024, activation = tf.nn.relu)
     net = tf.nn.dropout(net, 0.5)
     #net = tf.layers.dense(inputs = net, name ='layer_fc2',units = 128, activation=tf.nn.relu)
-    prLogits = tf.layers.dense(inputs = net, name='layer_fc_out', units = 8, activation = None)
+    H4Pt = tf.layers.dense(inputs = net, name='layer_fc_out', units = 8, activation = None)
 
     #prLogits is defined as the final output of the neural network
     # prLogits = layer_fc2
@@ -73,5 +73,5 @@ def HomographyModel(Img, ImageSize, MiniBatchSize):
     #prSoftMax is defined as normalized probabilities of the output of the neural network
     # prSoftMax = tf.nn.softmax(logits = prLogits)
     # print(prLogits)
-    return prLogits
+    return H4Pt
 

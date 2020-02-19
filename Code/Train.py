@@ -115,42 +115,46 @@ def TrainOperation(ImgPH, LabelPH, DirNamesTrain1, DirNamesTrain2, TrainLabels, 
 	Saves Trained network in CheckPointPath and Logs to LogsPath
 	"""      
 	# Predict output with forward pass
-	prLogits = HomographyModel(ImgPH, ImageSize, MiniBatchSize)
+	H4Pt = HomographyModel(ImgPH, ImageSize, MiniBatchSize)
 
 	with tf.name_scope('Loss'):
 		###############################################
 		# Fill your loss function of choice here!
 		###############################################
-		# cross_entropy = tf.nn.softmax_cross_entropy_with_logits(labels = LabelPH, logits = prLogits)
-		# loss = tf.reduce_mean(cross_entropy)
-		loss = tf.nn.l2_loss(tf.square(prLogits-LabelPH))
-		# loss = tf.square(prLogits-LabelPH)
-		# loss = tf.reduce_mean(loss_)
-		# loss = tf.
-		
-	# with tf.name_scope('Accuracy'):
-	# 	Acc = tf.math.equal(prLogits, LabelPH)
+		# loss = tf.nn.l2_loss(prLogits-LabelPH)
+		loss = tf.reduce_sum(tf.square(H4Pt-LabelPH))/2.0
+		lossSummary = tf.summary.scalar('LossEveryIter', loss)
+
+	with tf.name_scope('Error'):
+		Err = tf.reduce_mean(tf.abs(H4Pt - LabelPH))
+		errorSummary = tf.summary.scalar("Error ",Err)
 
 	with tf.name_scope('Adam'):
 		###############################################
 		# Fill your optimizer of choice here!
 		###############################################
-		Optimizer = tf.train.AdamOptimizer(learning_rate = 1e-5).minimize(loss)
+		Optimizer = tf.train.AdamOptimizer(learning_rate = 1e-4).minimize(loss)
 
-	# Tensorboard
-	# Create a summary to monitor loss tensor
-	tf.summary.scalar('LossEveryIter', loss)
-	# tf.summary.histogram("Errors",loss_)
+	with tf.name_scope("ValidationLoss"):
+		validation_loss = tf.reduce_sum(tf.square(H4Pt-LabelPH))/2.0
+		validationLossSummary = tf.summary.scalar("ValidationLoss ",validation_loss)
+			
+	with tf.name_scope("ValidationError"):
+		validation_Err = tf.reduce_mean(tf.abs(H4Pt - LabelPH))		
+		validationErrorSummary = tf.summary.scalar("ValidationError ",validation_Err)
+	
+
 	# tf.summary.scalar('Er', loss_[0])
-	# tf.summary.scalar('Accuracy', Acc)
 	# tf.summary.image('Anything you want', AnyImg)
 	# Merge all summaries into a single operation
-	MergedSummaryOP = tf.summary.merge_all()
+	# MergedSummaryOP = tf.summary.merge_all()
+	TrainingSummary = tf.summary.merge([lossSummary,errorSummary])
+	ValidationSummary = tf.summary.merge([validationLossSummary, validationErrorSummary])
 
 	# Setup Saver
 	Saver = tf.train.Saver()
 	acc = []
-	temp_acc = []
+	temp_error = []
 	temp_loss = []
 	loss_ = []
 	with tf.Session() as sess:       
@@ -172,7 +176,7 @@ def TrainOperation(ImgPH, LabelPH, DirNamesTrain1, DirNamesTrain2, TrainLabels, 
 			for PerEpochCounter in tqdm(range(NumIterationsPerEpoch)):
 				I1Batch, LabelBatch = GenerateBatch(BasePath, DirNamesTrain1, DirNamesTrain2, TrainLabels, ImageSize, MiniBatchSize, PerEpochCounter)
 				FeedDict = {ImgPH: I1Batch, LabelPH: LabelBatch}
-				_, LossThisBatch, Summary,out = sess.run([Optimizer, loss, MergedSummaryOP, prLogits], feed_dict=FeedDict)
+				_, LossThisBatch, Summary,out = sess.run([Optimizer, loss, TrainingSummary, H4Pt], feed_dict=FeedDict)
 				temp_loss.append(LossThisBatch)
 				# tf.Print(prLogits,[])
 				# temp_acc.append(sess.run([Acc], feed_dict=FeedDict))
@@ -216,7 +220,7 @@ def main():
 	Parser.add_argument('--ModelType', default='Unsup', help='Model type, Supervised or Unsupervised? Choose from Sup and Unsup, Default:Unsup')
 	Parser.add_argument('--NumEpochs', type=int, default=1, help='Number of Epochs to Train for, Default:50')
 	Parser.add_argument('--DivTrain', type=int, default=1, help='Factor to reduce Train data by per epoch, Default:1')
-	Parser.add_argument('--MiniBatchSize', type=int, default=32, help='Size of the MiniBatch to use, Default:1')
+	Parser.add_argument('--MiniBatchSize', type=int, default=16, help='Size of the MiniBatch to use, Default:1')
 	Parser.add_argument('--LoadCheckPoint', type=int, default=0, help='Load Model from latest Checkpoint from CheckPointsPath?, Default:0')
 	Parser.add_argument('--LogsPath', default='Logs/', help='Path to save Logs for Tensorboard, Default=Logs/')
 
