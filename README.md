@@ -7,7 +7,7 @@ Python3.5
 
 ## How to run
 
-### Phase 1: Classical Approach
+### Phase 1: Classical Approach to find homography, stich images together and perform color blending.
 Unzip the file vasthana_p1.zip
 Mode into the folder unzipped.
 
@@ -25,7 +25,7 @@ $ python Wrapper.py --ImageDirectory="mention your directory here"
 Program will generate various image output files in the CODE directory in Phase1 folder.
 If running various image data or test cases, it is recommended to take the back-up of generated output files before running the Wrapper.py again.
 
-### Phase 2: Deep Learning
+### Phase 2: Deep Learning to find 4 point homography matrix
 
 First go to Code directory and run gen.py to generate new data.
 ```
