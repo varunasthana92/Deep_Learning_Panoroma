@@ -56,10 +56,14 @@ def generatePatches(img, patchSize, p):
 		im2_ = cv2.warpPerspective(img,H,(w,h))
 		im2 = im2_[y_start:y_start + patchSize, x_start:x_start + patchSize]
 		#### generate input array	
-		im_in = np.zeros((patchSize,patchSize,2))				
-		im_in[:,:,0] = (im1 - 127.0)/127.0
-		im_in[:,:,1] = (im2 - 127.0)/127.0
-		output_homo = np.array(u + v)
+		# im_in = np.zeros((patchSize,patchSize,2))				
+		# im_in[:,:,0] = (im1 - 127.0)/127.0
+		# im_in[:,:,1] = (im2 - 127.0)/127.0
+		output_homo = []
+		for i in range(4):
+			output_homo.append(u[i])
+			output_homo.append(v[i])
+		output_homo = np.array(output_homo)
 		if imgCorners(im1):
 			return im1,im2,output_homo
 		else:
