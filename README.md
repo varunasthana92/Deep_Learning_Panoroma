@@ -9,20 +9,20 @@ Python3.5
 
 ### Phase 1: Classical Approach to find homography, stich images together and perform color blending.
 <p align="center">
-<img src="https://github.com/varunasthana92/Image_Panorama/blob/master/Phase1/Data/Train/Set1/3.jpg" width = 300>
-<img src="https://github.com/varunasthana92/Image_Panorama/blob/master/Phase1/Data/Train/Set1/1.jpg" width = 300>
-<img src="https://github.com/varunasthana92/Image_Panorama/blob/master/Phase1/Data/Train/Set1/2.jpg" width = 300>
+<img src="https://github.com/varunasthana92/Image_Panorama/blob/master/Phase1/Data/Train/Set1/3.jpg" width = 200>
+<img src="https://github.com/varunasthana92/Image_Panorama/blob/master/Phase1/Data/Train/Set1/1.jpg" width = 200>
+<img src="https://github.com/varunasthana92/Image_Panorama/blob/master/Phase1/Data/Train/Set1/2.jpg" width = 200>
 </p>
 
 <p align="center">
-<img src="https://github.com/varunasthana92/Image_Panorama/tree/master/images/ransac.png" width = 400>
+<img src="https://github.com/varunasthana92/Image_Panorama/blob/master/images/ransac.png" width = 400>
 <img src="https://github.com/varunasthana92/Image_Panorama/blob/master/images/pano.png" width = 500>
 </p>
 
 <p align="center">
-<img src="https://github.com/varunasthana92/Image_Panorama/blob/master/Phase1/Data/Train/Set2/1.jpg" width = 300>
-<img src="https://github.com/varunasthana92/Image_Panorama/blob/master/Phase1/Data/Train/Set2/2.jpg" width = 300>
-<img src="https://github.com/varunasthana92/Image_Panorama/blob/master/Phase1/Data/Train/Set2/3.jpg" width = 300>
+<img src="https://github.com/varunasthana92/Image_Panorama/blob/master/Phase1/Data/Train/Set2/1.jpg" width = 200>
+<img src="https://github.com/varunasthana92/Image_Panorama/blob/master/Phase1/Data/Train/Set2/2.jpg" width = 200>
+<img src="https://github.com/varunasthana92/Image_Panorama/blob/master/Phase1/Data/Train/Set2/3.jpg" width = 200>
 </p>
 
 <p align="center">
