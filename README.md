@@ -1,4 +1,4 @@
-# CMSC733 Project 1: MyAutoPano
+# Image Panaroma Generation
 
 ## Dependencies
 Python2.7
@@ -15,8 +15,8 @@ Python3.5
 </p>
 
 <p align="center">
-<img src="https://github.com/varunasthana92/Image_Panorama/blob/master/images/ransac.jpg" width = 400>
-<img src="https://github.com/varunasthana92/Image_Panorama/blob/master/images/pano.jpg" width = 500>
+<img src="https://github.com/varunasthana92/Image_Panorama/tree/master/images/ransac.png" width = 400>
+<img src="https://github.com/varunasthana92/Image_Panorama/blob/master/images/pano.png" width = 500>
 </p>
 
 <p align="center">
@@ -26,8 +26,8 @@ Python3.5
 </p>
 
 <p align="center">
-<img src="https://github.com/varunasthana92/Image_Panorama/blob/master/images/ransac2.jpg" width = 400>
-<img src="https://github.com/varunasthana92/Image_Panorama/blob/master/images/pano2.jpg" width = 500>
+<img src="https://github.com/varunasthana92/Image_Panorama/blob/master/images/ransac2.png" width = 400>
+<img src="https://github.com/varunasthana92/Image_Panorama/blob/master/images/pano2.png" width = 500>
 </p>
 
 
