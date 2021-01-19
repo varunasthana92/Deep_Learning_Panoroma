@@ -8,6 +8,29 @@ Python3.5
 ## How to run
 
 ### Phase 1: Classical Approach to find homography, stich images together and perform color blending.
+<p align="center">
+<img src="https://github.com/varunasthana92/Image_Panorama/blob/master/Phase1/Data/Train/Set1/3.jpg" width = 300>
+<img src="https://github.com/varunasthana92/Image_Panorama/blob/master/Phase1/Data/Train/Set1/1.jpg" width = 300>
+<img src="https://github.com/varunasthana92/Image_Panorama/blob/master/Phase1/Data/Train/Set1/2.jpg" width = 300>
+</p>
+
+<p align="center">
+<img src="https://github.com/varunasthana92/Image_Panorama/blob/master/images/ransac.jpg" width = 400>
+<img src="https://github.com/varunasthana92/Image_Panorama/blob/master/images/pano.jpg" width = 500>
+</p>
+
+<p align="center">
+<img src="https://github.com/varunasthana92/Image_Panorama/blob/master/Phase1/Data/Train/Set2/1.jpg" width = 300>
+<img src="https://github.com/varunasthana92/Image_Panorama/blob/master/Phase1/Data/Train/Set2/2.jpg" width = 300>
+<img src="https://github.com/varunasthana92/Image_Panorama/blob/master/Phase1/Data/Train/Set2/3.jpg" width = 300>
+</p>
+
+<p align="center">
+<img src="https://github.com/varunasthana92/Image_Panorama/blob/master/images/ransac2.jpg" width = 400>
+<img src="https://github.com/varunasthana92/Image_Panorama/blob/master/images/pano2.jpg" width = 500>
+</p>
+
+
 Unzip the file vasthana_p1.zip
 Mode into the folder unzipped.
 
